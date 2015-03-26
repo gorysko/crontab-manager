@@ -34,3 +34,11 @@ def remove_cron():
     if proc:
         return proc.communicate()
     return ()
+
+
+def check_active():
+    pass
+
+
+def change_status():
+    pass
