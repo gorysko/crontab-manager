@@ -1,26 +1,36 @@
 from subprocess import Popen
 from subprocess import PIPE
 
+from utils import read
+from utils import write
+
 
 def get_crontab():
+    """Gets crontab info."""
     proc = Popen(['crontab', '-l'], stdout=PIPE)
     return proc.communicate()
 
-def add_job(job):
-    f = open('cron', 'w+')
-    data = f.readlines()
+
+def add_job(job, path):
+    """Adds job to crontab."""
+    data = read(path)
     data.append(job + '\n')
-    f.write(''.join(data))
-    f.close()
-    proc = Popen(['crontab', 'cron'], stdout=PIPE)
-    return proc.communicate()
+    if write(path, ''.join(data)):
+        return True
+    return False
+
+
+def activate_cron(path):
+    """Activates cron."""
+    proc = Popen(['crontab', path], stdout=PIPE)
+    if proc:
+        return proc.communicate()
+    return ()
+
 
 def remove_cron():
+    """Removes cron."""
     proc = Popen(['crontab', '-r'], stdout=PIPE)
-    return proc.communicate()
-
-if __name__ == '__main__':
-    print get_crontab()
-    add_job('00 09 * * 1-5 echo hello')
-    print get_crontab()
-    print remove_cron()
+    if proc:
+        return proc.communicate()
+    return ()
