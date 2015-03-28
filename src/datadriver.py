@@ -36,6 +36,7 @@ def connection_open():
     if conn is not None:
         return conn
 
+
 def connection_close(connection):
     """Commits and closes connection."""
     return connection.commit() and connection.close()
@@ -63,6 +64,7 @@ def add_value(schedule, command, status, login):
                                                   status, login)
         cursor.execute(command)
         connection_close(connection)
+
 
 def check_dir(path):
     """Checks directory."""
