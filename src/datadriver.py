@@ -8,6 +8,7 @@ from os.path import isdir
 from os.path import abspath
 from os.path import join
 
+PATH = None
 
 def get_path(path=None):
     """Gets data path."""
@@ -16,15 +17,50 @@ def get_path(path=None):
     return join(path, getlogin())
 
 
-def connect(path):
+def connect():
     """Connects to database."""
-    if path is None:
+    global PATH
+    path = get_path()
+    if PATH is None:
         db_path = 'cron.db'
-    if path is not None:
-        if check_dir(path) is None:
+    if PATH is not None:
+        if check_dir(PATH) is None:
             return None
-        db_path = path + 'cron.db'
+        db_path = PATH + 'cron.db'
     return sqlite3.connect(db_path)
+
+
+def connection_open():
+    """Returns cursor."""
+    conn = connect()
+    if conn is not None:
+        return conn
+
+def connection_close(connection):
+    """Commits and closes connection."""
+    return connection.commit() and connection.close()
+
+
+def migrate():
+    """Migrates database."""
+    connection = connection_open()
+    cursor = connection.cursor()
+    if cursor is not None:
+        cursor.execute('''CREATE TABLE crons
+                       (schedule text, command text,
+                        status int, login text)''')
+        connection_close(connection)
+
+
+def add_value(schedule, command, status, login):
+    """Inserts data into database."""
+    connection = connection_open()
+    cursor = connection.cursor()
+    if cursor is not None:
+        cursor.execute('''INSERT INTO crons VALUES
+                       ('%s','%s','%d','%s')''') % (schedule, command,
+                                                    status, login)
+        connection_close(connection)
 
 
 def check_dir(path):
