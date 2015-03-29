@@ -3,11 +3,11 @@ from subprocess import Popen
 from subprocess import PIPE
 
 from db import session
-
 from models.models import Cron
 from models.models import CronItem
 from utils import write
 
+STATUS_ACTIVE = 1
 
 def add_cron(name, status=0):
     """Adds new cron."""
@@ -28,7 +28,7 @@ def get_cron_id(uuid):
 
 def get_active():
     """Gets all active crons."""
-    return session.query(Cron).filter(Cron.status == 1).all()
+    return session.query(Cron).filter(Cron.status == STATUS_ACTIVE).all()
 
 
 def change_cron_status(uuid, status):
@@ -67,14 +67,14 @@ def create_cron(cron_id):
     cron = get_cron_id(cron_id)
     result = []
     for item in cron.cron_item:
-        if item.status == 1:
+        if item.status == STATUS_ACTIVE:
             result.append('%s %s' % (item.schedule, item.command))
     return result
 
 
-def save_cron(cron_id):
+def save_cron(cron_id, path='cron'):
     """Saves cron file."""
-    write('cron', '\n'.join(create_cron(cron_id)))
+    write(path, '\n'.join(create_cron(cron_id)))
 
 
 def activate_cron(path='cron'):
