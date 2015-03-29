@@ -2,45 +2,37 @@
 from subprocess import Popen
 from subprocess import PIPE
 
-from utils import read
-from utils import write
+from db import session
+
+from models.cron import Cron
+from models.cron_item import CronItem
 
 
-def get_crontab():
-    """Gets crontab info."""
-    proc = Popen(['crontab', '-l'], stdout=PIPE)
-    return proc.communicate()
+def add_cron(name, status=0):
+    """Adds new cron."""
+    cron = Cron(name=name, status=status)
+    session.add(cron)
+    session.commit()
 
 
-def add_job(job, path):
-    """Adds job to crontab."""
-    data = read(path)
-    data.append(job + '\n')
-    if write(path, ''.join(data)):
-        return True
-    return False
+def get_cron_name(cron_name):
+    """Gets cron by name"""
+    return session.query(Cron).filter(Cron.name == cron_name).all()
 
 
-def activate_cron(path):
-    """Activates cron."""
-    proc = Popen(['crontab', path], stdout=PIPE)
-    if proc:
-        return proc.communicate()
-    return ()
+def get_cron_id(uuid):
+    """Gets cron by uuid."""
+    return session.query(Cron).filter(Cron.id == uuid).one()
 
 
-
-def remove_cron():
-    """Removes cron."""
-    proc = Popen(['crontab', '-r'], stdout=PIPE)
-    if proc:
-        return proc.communicate()
-    return ()
+def get_active():
+    """Gets all active crons."""
+    return session.query(Cron).filter(Cron.status == 1).all()
 
 
-def check_active():
-    pass
-
-
-def change_status():
-    pass
+def change_status(uuid, status):
+    """Sets new status to the cron."""
+    cron = get_cron_id(uuid)
+    if cron is not None:
+        cron.status = status
+        session.commit()
