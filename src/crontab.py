@@ -60,3 +60,20 @@ def link(cron_item_id, cron_id):
         cron.cron_item.append(cron_item)
         session.commit()
 
+
+def create_cron():
+    pass
+
+
+def save_cron():
+    pass
+
+
+def activate_cron():
+    pass
+
+
+def remove_cron():
+    pass
+
+
