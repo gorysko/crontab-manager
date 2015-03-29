@@ -1,9 +1,10 @@
+"""Utils module."""
 from os.path import isfile
 
 
 def read(path):
     """Reads data in cron file"""
-    raw_f = open_path(path)
+    raw_f = open(path)
     data = raw_f.readlines()
     raw_f.close()
     return data

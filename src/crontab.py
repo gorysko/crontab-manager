@@ -6,6 +6,7 @@ from db import session
 
 from models.models import Cron
 from models.models import CronItem
+from utils import write
 
 
 def add_cron(name, status=0):
@@ -61,19 +62,33 @@ def link(cron_item_id, cron_id):
         session.commit()
 
 
-def create_cron():
-    pass
+def create_cron(cron_id):
+    """Creats cron file."""
+    cron = get_cron_id(cron_id)
+    result = []
+    for item in cron.cron_item:
+        if item.status == 1:
+            result.append('%s %s' % (item.schedule, item.command))
+    return result
 
 
-def save_cron():
-    pass
+def save_cron(cron_id):
+    """Saves cron file."""
+    write('cron', '\n'.join(create_cron(cron_id)))
 
 
-def activate_cron():
-    pass
+def activate_cron(path='cron'):
+    """Activates cron file."""
+    return call_crontab(path)
 
 
 def remove_cron():
-    pass
+    """Cleanes crontab."""
+    return call_crontab('-r')
 
+
+def call_crontab(arg):
+    """Calls crontab."""
+    proc = Popen(['crontab', arg], stdout=PIPE, stderr=PIPE)
+    return proc.communicate()
 

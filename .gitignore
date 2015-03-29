@@ -1,6 +1,6 @@
 *.pyc
 .Python
-*.db
+src/*.db
 pip-selfcheck.json
 bin/
 include/
