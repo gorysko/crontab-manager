@@ -3,8 +3,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from models import Base
-from models.cron import Cron
-from models.cron_item import CronItem
+from models.models import Cron
+from models.models import CronItem
 
 # creating engine
 engine = create_engine('sqlite:///cron.db')

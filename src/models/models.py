@@ -14,7 +14,7 @@ class Cron(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(250), nullable=False)
     status = Column(Integer, nullable=False)
-    cron_item = relationship(CronItem, secondary='cron_item_link')
+    cron_item = relationship('CronItem', secondary='cron_item_link')
 
 
 class CronItem(Base):

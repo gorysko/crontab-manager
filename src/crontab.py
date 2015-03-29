@@ -4,8 +4,8 @@ from subprocess import PIPE
 
 from db import session
 
-from models.cron import Cron
-from models.cron_item import CronItem
+from models.models import Cron
+from models.models import CronItem
 
 
 def add_cron(name, status=0):
@@ -40,7 +40,8 @@ def change_cron_status(uuid, status):
 
 def add_crontabitem(name, schedule, command, status=0):
     """Adds crontab itemself."""
-    cron_item = CronItem(name, schedule, command, status)
+    cron_item = CronItem(name=name, schedule=schedule,
+                         command=command, status=status)
     session.add(cron_item)
     session.commit()
 
