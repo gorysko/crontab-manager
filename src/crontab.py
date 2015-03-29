@@ -30,9 +30,32 @@ def get_active():
     return session.query(Cron).filter(Cron.status == 1).all()
 
 
-def change_status(uuid, status):
+def change_cron_status(uuid, status):
     """Sets new status to the cron."""
     cron = get_cron_id(uuid)
     if cron is not None:
         cron.status = status
         session.commit()
+
+
+def add_crontabitem(name, schedule, command, status=0):
+    """Adds crontab itemself."""
+    cron_item = CronItem(name, schedule, command, status)
+    session.add(cron_item)
+    session.commit()
+
+
+def get_item_id(uuid):
+    """Gets crontab item by id"""
+    return session.query(CronItem).filter(CronItem.id == uuid).one()
+
+
+def link(cron_item_id, cron_id):
+    """Links cron items and cron"""
+    cron_item = get_item_id(cron_item_id)
+    cron = get_cron_id(cron_id)
+    if cron_item is not None and cron is not None:
+        cron_item.cron.append(cron)
+        cron.cron_item.append(cron_item)
+        session.commit()
+
