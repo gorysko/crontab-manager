@@ -1,6 +1,9 @@
+#! /usr/bin/env python
+
 """Cron module"""
 from subprocess import Popen
 from subprocess import PIPE
+from optparse import OptionParser
 
 from db import session
 from models.models import Cron
@@ -8,6 +11,7 @@ from models.models import CronItem
 from utils import write
 
 STATUS_ACTIVE = 1
+
 
 def add_cron(name, status=0):
     """Adds new cron."""
@@ -84,7 +88,7 @@ def activate_cron(path='cron'):
 
 def remove_cron():
     """Cleanes crontab."""
-    return call_crontab('-r')
+    return call_crontab('-return')
 
 
 def call_crontab(arg):
@@ -92,3 +96,22 @@ def call_crontab(arg):
     proc = Popen(['crontab', arg], stdout=PIPE, stderr=PIPE)
     return proc.communicate()
 
+
+def main():
+    """Parses command line args."""
+    usage = "usage: %prog [options] arg"
+    parser = OptionParser(usage)
+    parser.add_option('-c', '--crontab', dest='crontab',
+                      help='creates crontab')
+    parser.add_option('-j', '--cronjob', dest='cronjob',
+                      help='creates cronjob item')
+    (options, args) = parser.parse_args()
+    if options.crontab is not None:
+        add_cron(options.crontab)
+
+    if options.cronjob is not None:
+        cronjob = options.cronjob.split(',')
+        add_crontabitem(cronjob[0], cronjob[1], cronjob[2])
+
+if __name__ == '__main__':
+    main()
