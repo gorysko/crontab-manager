@@ -12,6 +12,20 @@ This library helps you to add , edit and maintain your cronjobs. For this moment
 * activate crontab file
 * clear crontab
 
+## How:
+
+* creating crontab instance whith name = 'name'
+
+`
+-c name
+`
+
+* creating  cronjob instance, whith name = 'name', schedule = '* * * * *', command = 'command'
+
+`
+-j 'name,* * * * *,command'
+`
+
 ## Requirements:
 
 * Python
