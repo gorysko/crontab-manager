@@ -15,9 +15,12 @@ STATUS_ACTIVE = 1
 
 def add_cron(name, status=0):
     """Adds new cron."""
-    cron = Cron(name=name, status=status)
-    session.add(cron)
-    session.commit()
+    cron = get_cron_name(name)
+    if cron is None:
+        cron = Cron(name=name, status=status)
+        session.add(cron)
+        session.commit()
+    return cron
 
 
 def get_cron_name(cron_name):
@@ -45,10 +48,18 @@ def change_cron_status(uuid, status):
 
 def add_crontabitem(name, schedule, command, status=0):
     """Adds crontab itemself."""
-    cron_item = CronItem(name=name, schedule=schedule,
-                         command=command, status=status)
-    session.add(cron_item)
-    session.commit()
+    cron_item = get_item_name(name)
+    if cron_item is None:
+        cron_item = CronItem(name=name, schedule=schedule,
+                             command=command, status=status)
+        session.add(cron_item)
+        session.commit()
+    return cron_item
+
+
+def get_item_name(name):
+    """Gets crontab item by name"""
+    return session.query(CronItem).filter(CronItem.name == name).one()
 
 
 def get_item_id(uuid):
@@ -105,13 +116,23 @@ def main():
                       help='creates crontab')
     parser.add_option('-j', '--cronjob', dest='cronjob',
                       help='creates cronjob item')
-    (options, args) = parser.parse_args()
+
+    options, args = parser.parse_args()
     if options.crontab is not None:
         add_cron(options.crontab)
 
     if options.cronjob is not None:
         cronjob = options.cronjob.split(',')
         add_crontabitem(cronjob[0], cronjob[1], cronjob[2])
+
+    if options.cronjob is not None and options.crontab is not None:
+        cron = add_cron(options.crontab)
+        cronjob = options.cronjob.split(',')
+        cron_item = add_crontabitem(cronjob[0], cronjob[1], cronjob[2])
+        link(cron_item.id, cron.id)
+
+
+
 
 if __name__ == '__main__':
     main()
