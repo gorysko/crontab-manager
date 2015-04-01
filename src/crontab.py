@@ -30,12 +30,15 @@ def get_cron_name(cron_name):
 
 def get_cron_id(uuid):
     """Gets cron by uuid."""
-    return session.query(Cron).filter(Cron.id == uuid).one()
+    result = session.query(Cron).filter(Cron.id == uuid)
+    if result.count() != 0:
+        return result.one()
+    return []
 
 
-def get_active():
-    """Gets all active crons."""
-    return session.query(Cron).filter(Cron.status == STATUS_ACTIVE).all()
+def get_crontabs(status):
+    """Gets alls crons."""
+    return session.query(Cron).filter(Cron.status == status).all()
 
 
 def change_cron_status(uuid, status):
@@ -49,7 +52,7 @@ def change_cron_status(uuid, status):
 def add_crontabitem(name, schedule, command, status=0):
     """Adds crontab itemself."""
     cron_item = get_item_name(name)
-    if cron_item is None:
+    if cron_item is not None:
         cron_item = CronItem(name=name, schedule=schedule,
                              command=command, status=status)
         session.add(cron_item)
@@ -59,7 +62,10 @@ def add_crontabitem(name, schedule, command, status=0):
 
 def get_item_name(name):
     """Gets crontab item by name"""
-    return session.query(CronItem).filter(CronItem.name == name).one()
+    result = session.query(CronItem).filter(CronItem.name == name)
+    if result.count() != 0:
+        return result.one()
+    return []
 
 
 def get_item_id(uuid):
@@ -71,7 +77,7 @@ def link(cron_item_id, cron_id):
     """Links cron items and cron"""
     cron_item = get_item_id(cron_item_id)
     cron = get_cron_id(cron_id)
-    if cron_item is not None and cron is not None:
+    if cron_item != [] and cron != []:
         cron_item.cron.append(cron)
         cron.cron_item.append(cron_item)
         session.commit()
@@ -81,9 +87,10 @@ def create_cron(cron_id):
     """Creats cron file."""
     cron = get_cron_id(cron_id)
     result = []
-    for item in cron.cron_item:
-        if item.status == STATUS_ACTIVE:
-            result.append('%s %s' % (item.schedule, item.command))
+    if cron != []:
+        for item in cron.cron_item:
+            if item.status == STATUS_ACTIVE:
+                result.append('%s %s' % (item.schedule, item.command))
     return result
 
 
@@ -108,6 +115,24 @@ def call_crontab(arg):
     return proc.communicate()
 
 
+def list_crontabs(status=STATUS_ACTIVE):
+    """Listing of crontabs."""
+    items = get_crontabs(status)
+    return [item.name for item in items]
+
+
+def get_cronjobs(status):
+    """gets list of cronjobs"""
+    return session.query(CronItem).filter(CronItem.status == status).all()
+
+
+def listing(status=STATUS_ACTIVE, value='cron'):
+    """Lists cronjobs."""
+    actions = {'cron': get_crontabs, 'jobs': get_cronjobs}
+    items = actions[value](status)
+    return [item.name for item in items]
+
+
 def main():
     """Parses command line args."""
     usage = "usage: %prog [options] arg"
@@ -117,13 +142,33 @@ def main():
     parser.add_option('-j', '--cronjob', dest='cronjob',
                       help='creates cronjob item')
 
-    options, args = parser.parse_args()
+    parser.add_option('--list-crontabs', dest='lc',
+                      help='lists crontab')
+
+    parser.add_option('--list-cronjobs', dest='lj',
+                      help='lists cronjobs')
+
+    options, _ = parser.parse_args()
+
+
     if options.crontab is not None:
         add_cron(options.crontab)
 
     if options.cronjob is not None:
         cronjob = options.cronjob.split(',')
         add_crontabitem(cronjob[0], cronjob[1], cronjob[2])
+
+    if options.lc is not None:
+        status = 0
+        if options.lc == 'active':
+            status = 1
+        print listing(status, 'cron')
+
+    if options.lj is not None:
+        status = 0
+        if options.lj == 'active':
+            status = 1
+        print listing(status, 'jobs')
 
     if options.cronjob is not None and options.crontab is not None:
         cron = add_cron(options.crontab)
