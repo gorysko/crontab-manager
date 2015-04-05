@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 """Command line module"""
+from optparse import OptionParser
 
 from cron_manager import *
 

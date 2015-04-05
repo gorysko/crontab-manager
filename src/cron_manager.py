@@ -3,7 +3,6 @@
 """Cron module"""
 from subprocess import Popen
 from subprocess import PIPE
-from optparse import OptionParser
 
 from db import session
 from models.models import Cron
