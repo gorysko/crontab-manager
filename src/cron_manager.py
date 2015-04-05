@@ -14,9 +14,13 @@ STATUS_DISABLED = 0
 STATUS_ACTIVE = 1
 STATUS_RUNNING = 2
 
-# SCHEDULE = {
-
-# }
+SCHEDULE = {
+    'daily': '0 0 0 0 *',
+    'workdays': '0 0 * * 1-5',
+    'weekends': '0 0 * * 6-7',
+    'monthly': '0 0 1 * *',
+    'workhours': '0 09-18 * * 1-5'
+}
 
 
 def add_cron(name, status=STATUS_DISABLED):
@@ -33,12 +37,14 @@ def get_cron_name(cron_name):
     """Gets cron by name."""
     return session.query(Cron).filter(Cron.name == cron_name).all()
 
+
 def get_cron_jobs(cron_id):
     """Gets cron jobs of the cron."""
     cron = get_cron_id(cron_id)
     if cron is not None:
         return [item.name for item in cron.cron_item]
     return []
+
 
 def get_cron_id(uuid):
     """Gets cron by uuid."""
@@ -66,8 +72,11 @@ def change_cron_status(uuid, status):
 def add_crontabitem(name, schedule, command, status=STATUS_DISABLED):
     """Adds crontab itemself."""
     cron_item = get_item_name(name)
+    timing = schedule
+    if schedule in SCHEDULE:
+        timing = SCHEDULE[schedule]
     if cron_item is not None:
-        cron_item = CronItem(name=name, schedule=schedule,
+        cron_item = CronItem(name=name, schedule=timing,
                              command=command, status=status)
         session.add(cron_item)
         session.commit()
