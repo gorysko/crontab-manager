@@ -27,7 +27,7 @@ def add_cron(name, status=STATUS_DISABLED):
 
 
 def get_cron_name(cron_name):
-    """Gets cron by name"""
+    """Gets cron by name."""
     return session.query(Cron).filter(Cron.name == cron_name).all()
 
 
@@ -50,6 +50,8 @@ def change_cron_status(uuid, status):
     if cron is not None:
         cron.status = status
         session.commit()
+        return True
+    return False
 
 
 def add_crontabitem(name, schedule, command, status=STATUS_DISABLED):
@@ -77,17 +79,26 @@ def get_item_id(uuid):
 
 
 def link(cron_item_id, cron_id):
-    """Links cron items and cron"""
+    """Links cron items and cron
+    Args:
+        cron_item_id: uuid of the cron item
+        cron: uuid of the cron
+    """
     cron_item = get_item_id(cron_item_id)
     cron = get_cron_id(cron_id)
     if cron_item != [] and cron != []:
         cron_item.cron.append(cron)
         cron.cron_item.append(cron_item)
         session.commit()
+        return True
+    return False
 
 
 def create_cron(cron_id):
-    """Creats cron file."""
+    """Creats cron file.
+    Args:
+        cron_id: uuid of the cron.
+    """
     cron = get_cron_id(cron_id)
     result = []
     if cron != []:
@@ -119,23 +130,18 @@ def save_cron(cron_id, path='cron'):
         return True
     return False
 
+
 def run_cron(path='cron'):
     """Runs cron file.
     Args:
         path: path to cron template, file.
     """
-    return call_crontab(path)
+    return _call_crontab(path)
 
 
 def remove_cron():
     """Cleanes crontab."""
-    return call_crontab('-return')
-
-
-def call_crontab(arg):
-    """Calls crontab."""
-    proc = Popen(['crontab', arg], stdout=PIPE, stderr=PIPE)
-    return proc.communicate()
+    return _call_crontab('-return')
 
 
 def list_crontabs(status=STATUS_ACTIVE):
@@ -154,6 +160,12 @@ def listing(status=STATUS_ACTIVE, value='cron'):
     actions = {'cron': get_crontabs, 'jobs': get_cronjobs}
     items = actions[value](status)
     return [item.name for item in items]
+
+
+def _call_crontab(arg):
+    """Calls crontab."""
+    proc = Popen(['crontab', arg], stdout=PIPE, stderr=PIPE)
+    return proc.communicate()
 
 
 def main():
@@ -198,8 +210,6 @@ def main():
         cronjob = options.cronjob.split(',')
         cron_item = add_crontabitem(cronjob[0], cronjob[1], cronjob[2])
         link(cron_item.id, cron.id)
-
-
 
 
 if __name__ == '__main__':
