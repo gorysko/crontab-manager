@@ -10,10 +10,13 @@ from models.models import Cron
 from models.models import CronItem
 from utils import write
 
+
+STATUS_DISABLED = 0
 STATUS_ACTIVE = 1
+STATUS_RUNNING = 2
 
 
-def add_cron(name, status=0):
+def add_cron(name, status=STATUS_DISABLED):
     """Adds new cron."""
     cron = get_cron_name(name)
     if cron is None:
@@ -49,7 +52,7 @@ def change_cron_status(uuid, status):
         session.commit()
 
 
-def add_crontabitem(name, schedule, command, status=0):
+def add_crontabitem(name, schedule, command, status=STATUS_DISABLED):
     """Adds crontab itemself."""
     cron_item = get_item_name(name)
     if cron_item is not None:
@@ -93,14 +96,34 @@ def create_cron(cron_id):
                 result.append('%s %s' % (item.schedule, item.command))
     return result
 
+def activate_cron(cron_id, path='cron'):
+    """Activates cron by cron_id.
+    Args:
+        cron_id: id of the cron to b activated.
+        path: path for the cron file template.
+    """
+    if change_cron_status(cron_id, STATUS_RUNNING):
+        return save_cron(cron_id, path) and run_cron(path)
+    return False
+
 
 def save_cron(cron_id, path='cron'):
-    """Saves cron file."""
-    write(path, '\n'.join(create_cron(cron_id)))
+    """Saves cron file.
+    Args:
+        cron_id: id of the cron to be saved in template.
+        path: path for the saving template.
+    """
+    result = create_cron(cron_id)
+    if result != []:
+        write(path, '\n'.join(result))
+        return True
+    return False
 
-
-def activate_cron(path='cron'):
-    """Activates cron file."""
+def run_cron(path='cron'):
+    """Runs cron file.
+    Args:
+        path: path to cron template, file.
+    """
     return call_crontab(path)
 
 
