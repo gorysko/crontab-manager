@@ -140,7 +140,7 @@ def run_cron(path='cron'):
 
 def remove_cron():
     """Cleanes crontab."""
-    return _call_crontab('-return')
+    return _call_crontab('-r')
 
 
 def list_crontabs(status=STATUS_ACTIVE):
