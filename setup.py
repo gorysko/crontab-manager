@@ -1,4 +1,5 @@
 """Setup module."""
+
 from src.utils import read
 from setuptools import setup
 

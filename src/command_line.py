@@ -16,6 +16,9 @@ def main():
     parser.add_option('--list-crontabs', dest='lc',
                       help='lists crontab')
 
+    parser.add_option('--list-jobs', dest='jobs',
+                      help='lists jobs')
+
     parser.add_option('--list-cronjobs', dest='lj',
                       help='lists cronjobs')
 
@@ -49,6 +52,9 @@ def main():
 
     if options.cur is not None:
         print listing(STATUS_RUNNING, 'cron')
+
+    if options.jobs is not None:
+        print get_cron_jobs(options.jobs)
 
     if options.rm is not None:
         remove_cron()
